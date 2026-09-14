@@ -1,0 +1,12 @@
+[package]
+name = "diff-rank"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Ranks the files in a unified diff by how much they changed"
+
+[[bin]]
+name = "diff-rank"
+path = "src/main.rs"
+
+[dependencies]
