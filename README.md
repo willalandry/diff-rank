@@ -44,8 +44,6 @@ on the input too large to eyeball.
 This is an early skeleton. Known gaps, in rough order of how much they'll
 bite you:
 
-- Deleted files (diffs ending in `+++ /dev/null`) aren't counted, since
-  the tool currently keys everything off the `+++ b/...` path.
 - Binary diffs (`GIT binary patch`) aren't specially detected, so their
   encoded body lines can be miscounted as added/removed text lines.
 - Renames aren't recognized as a distinct kind of change.

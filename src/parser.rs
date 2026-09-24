@@ -24,6 +24,10 @@ pub fn rank<R: BufRead>(reader: R) -> Result<Vec<FileStat>> {
     let mut order: Vec<String> = Vec::new();
     let mut counts: HashMap<String, (u64, u64)> = HashMap::new();
     let mut current: Option<String> = None;
+    // The path from the "--- a/..." line, held until we see the matching
+    // "+++" so a deleted file (whose "+++" side is /dev/null) still has
+    // somewhere to pull its path from.
+    let mut old_path: Option<String> = None;
 
     for line in reader.lines() {
         let line = line?;
@@ -32,15 +36,21 @@ pub fn rank<R: BufRead>(reader: R) -> Result<Vec<FileStat>> {
             // A new file section is starting; forget the old one so stray
             // lines before the next "+++" header aren't miscounted.
             current = None;
+            old_path = None;
             continue;
         }
 
-        if line.starts_with("--- ") {
+        if let Some(rest) = line.strip_prefix("--- ") {
+            old_path = rest.strip_prefix("a/").map(|p| p.to_string());
             continue;
         }
 
         if let Some(rest) = line.strip_prefix("+++ ") {
-            current = rest.strip_prefix("b/").map(|p| p.to_string());
+            current = if rest == "/dev/null" {
+                old_path.take()
+            } else {
+                rest.strip_prefix("b/").map(|p| p.to_string())
+            };
             if let Some(path) = &current {
                 if !counts.contains_key(path) {
                     order.push(path.clone());
