@@ -17,6 +17,16 @@ $ git diff | diff-rank
      6  +3      -3       README.md
 ```
 
+Binary files (`Binary files ... differ`, or a `GIT binary patch` block) are
+listed with `binary` in place of a line count instead of having their
+encoded body miscounted as added/removed text:
+
+```
+$ git diff | diff-rank
+   142  +98     -44      src/parser.rs
+     0  binary           logo.png
+```
+
 Or point it at a saved patch file:
 
 ```
@@ -44,8 +54,6 @@ on the input too large to eyeball.
 This is an early skeleton. Known gaps, in rough order of how much they'll
 bite you:
 
-- Binary diffs (`GIT binary patch`) aren't specially detected, so their
-  encoded body lines can be miscounted as added/removed text lines.
 - Renames aren't recognized as a distinct kind of change.
 
 See the roadmap in the project notes for what's planned next.

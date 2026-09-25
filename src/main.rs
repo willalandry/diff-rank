@@ -44,13 +44,17 @@ fn main() -> ExitCode {
     }
 
     for stat in &stats {
-        println!(
-            "{:>6}  +{:<6} -{:<6}  {}",
-            stat.total(),
-            stat.added,
-            stat.removed,
-            stat.path
-        );
+        if stat.is_binary {
+            println!("{:>6}  {:<17}{}", stat.total(), "binary", stat.path);
+        } else {
+            println!(
+                "{:>6}  +{:<6} -{:<6}  {}",
+                stat.total(),
+                stat.added,
+                stat.removed,
+                stat.path
+            );
+        }
     }
 
     ExitCode::SUCCESS
