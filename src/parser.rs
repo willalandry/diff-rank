@@ -7,11 +7,21 @@ pub struct FileStat {
     pub added: u64,
     pub removed: u64,
     pub is_binary: bool,
+    /// Previous path when git reported this file as renamed.
+    pub renamed_from: Option<String>,
 }
 
 impl FileStat {
     pub fn total(&self) -> u64 {
         self.added + self.removed
+    }
+
+    /// The path as shown in output: "old -> new" for renames.
+    pub fn display_path(&self) -> String {
+        match &self.renamed_from {
+            Some(old) => format!("{} -> {}", old, self.path),
+            None => self.path.clone(),
+        }
     }
 }
 
@@ -58,6 +68,9 @@ pub fn rank<R: BufRead>(reader: R) -> Result<Vec<FileStat>> {
     // around in case this section turns out to be binary and so never gets
     // a "+++" line to set `current` from.
     let mut header_path: Option<String> = None;
+    // New path -> old path for sections git marked as renames.
+    let mut renames: HashMap<String, String> = HashMap::new();
+    let mut rename_from: Option<String> = None;
 
     for line in reader.lines() {
         let line = line?;
@@ -67,7 +80,24 @@ pub fn rank<R: BufRead>(reader: R) -> Result<Vec<FileStat>> {
             // lines before the next "+++" header aren't miscounted.
             current = None;
             old_path = None;
+            rename_from = None;
             header_path = parse_git_header_new_path(rest);
+            continue;
+        }
+
+        if let Some(rest) = line.strip_prefix("rename from ") {
+            rename_from = Some(rest.to_string());
+            continue;
+        }
+
+        // A pure rename has no "---"/"+++" lines at all, so this header is
+        // the only chance to register the file.
+        if let Some(rest) = line.strip_prefix("rename to ") {
+            if let Some(old) = rename_from.take() {
+                register(&mut order, &mut counts, rest);
+                renames.insert(rest.to_string(), old);
+                current = Some(rest.to_string());
+            }
             continue;
         }
 
@@ -124,6 +154,7 @@ pub fn rank<R: BufRead>(reader: R) -> Result<Vec<FileStat>> {
         .map(|path| {
             let (added, removed, is_binary) = counts[&path];
             FileStat {
+                renamed_from: renames.remove(&path),
                 path,
                 added,
                 removed,

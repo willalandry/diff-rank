@@ -27,6 +27,16 @@ $ git diff | diff-rank
      0  binary           logo.png
 ```
 
+Files git reports as renamed (`rename from` / `rename to`) are shown as
+`old -> new`, and a rename with no content change still appears, with a
+count of zero. Line counts are for the edits made alongside the move:
+
+```
+$ git diff -M | diff-rank
+    12  +7      -5       src/lexer.rs -> src/scan.rs
+     0  +0      -0       docs/a.md -> docs/b.md
+```
+
 Or point it at a saved patch file:
 
 ```
@@ -54,7 +64,8 @@ on the input too large to eyeball.
 This is an early skeleton. Known gaps, in rough order of how much they'll
 bite you:
 
-- Renames aren't recognized as a distinct kind of change.
+- There is no way to limit output to the top N files.
+- Paths that git quotes (spaces, non-ASCII) are not unquoted.
 
 See the roadmap in the project notes for what's planned next.
 

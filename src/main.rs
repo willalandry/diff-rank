@@ -45,14 +45,19 @@ fn main() -> ExitCode {
 
     for stat in &stats {
         if stat.is_binary {
-            println!("{:>6}  {:<17}{}", stat.total(), "binary", stat.path);
+            println!(
+                "{:>6}  {:<17}{}",
+                stat.total(),
+                "binary",
+                stat.display_path()
+            );
         } else {
             println!(
                 "{:>6}  +{:<6} -{:<6}  {}",
                 stat.total(),
                 stat.added,
                 stat.removed,
-                stat.path
+                stat.display_path()
             );
         }
     }
