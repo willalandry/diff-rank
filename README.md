@@ -37,6 +37,14 @@ $ git diff -M | diff-rank
      0  +0      -0       docs/a.md -> docs/b.md
 ```
 
+`--top N` keeps only the N most changed files, and `--min N` drops files
+with fewer than N lines changed. When both are given, `--min` is applied
+first, then `--top`. Both also accept the `--top=N` form:
+
+```
+$ git log -p --since=6.months | diff-rank --min 10 --top 5
+```
+
 Or point it at a saved patch file:
 
 ```
@@ -64,7 +72,6 @@ on the input too large to eyeball.
 This is an early skeleton. Known gaps, in rough order of how much they'll
 bite you:
 
-- There is no way to limit output to the top N files.
 - Paths that git quotes (spaces, non-ASCII) are not unquoted.
 
 See the roadmap in the project notes for what's planned next.
